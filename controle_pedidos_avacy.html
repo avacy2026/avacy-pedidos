@@ -784,6 +784,84 @@
   .step-item.bloqueado { opacity:0.45; pointer-events:none; }
   .cancel-modal { background: var(--bg-card2); border:1px solid rgba(239,68,68,0.4); border-radius:12px; padding:20px; margin-top:16px; }
 
+  .btn-copiar {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 11px;
+    transition: all 0.15s;
+    vertical-align: middle;
+  }
+  .btn-copiar:hover { color: var(--roxo-light); background: rgba(124,58,237,0.1); }
+
+  .registros-container {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .registro-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .registro-meta {
+    color: var(--text-dim);
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+  .registro-texto { color: var(--text); line-height: 1.4; }
+  .registro-input-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: flex-end;
+  }
+  .registro-input-area input {
+    flex: 1;
+    font-size: 13px;
+  }
+  .btn-add-registro {
+    background: var(--teal);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-add-registro:hover { opacity: 0.85; }
+
+  .btn-num-cd {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-num-cd.active {
+    background: linear-gradient(135deg, var(--roxo-dark), var(--roxo));
+    border-color: var(--roxo);
+    color: white;
+  }
+  .btn-num-cd:hover:not(.active) { border-color: var(--roxo-light); color: var(--text); }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -805,6 +883,9 @@
         <span class="tab-icon">📦</span> Acompanhamento Backoffice
         <span class="pedidos-count" id="totalBadge">0</span>
       </button>
+      <button class="tab-btn" onclick="switchTab('vendedores', this)">
+        <span class="tab-icon">👥</span> Vendedores
+      </button>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <button onclick="exportarDados()" style="background:transparent;border:1px solid rgba(124,58,237,0.4);color:#A78BFA;padding:6px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" onmouseover="this.style.background='rgba(124,58,237,0.15)'" onmouseout="this.style.background='transparent'">⬇ Exportar</button>
@@ -825,7 +906,19 @@
       <p>Preencha os dados do pedido para enviar ao backoffice.</p>
     </div>
 
+    <!-- Seletor 1 ou 2 CDs -->
+    <div class="form-card" style="margin-bottom:16px;padding:20px 32px">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:600;color:var(--text-muted)">Quantos pedidos para este cliente?</span>
+        <div style="display:flex;gap:8px">
+          <button id="btn-1cd" class="btn-num-cd active" onclick="selecionarNumCDs(1)">1 Pedido</button>
+          <button id="btn-2cd" class="btn-num-cd" onclick="selecionarNumCDs(2)">2 Pedidos (MT + GRU)</button>
+        </div>
+      </div>
+    </div>
+
     <div class="form-card">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">Dados Comuns</div>
       <div class="form-grid">
         <div class="form-group">
           <label>Vendedor *</label>
@@ -843,56 +936,22 @@
             <option>SAMARA</option>
           </select>
         </div>
-
         <div class="form-group">
           <label>Emissão do Pedido *</label>
           <input type="date" id="f-emissao">
         </div>
-
         <div class="form-group">
           <label>Código do Cliente *</label>
           <input type="text" id="f-codcliente" placeholder="Ex: 44265">
         </div>
-
         <div class="form-group">
           <label>Responsável da Empresa *</label>
           <input type="text" id="f-responsavel" placeholder="Nome do responsável">
         </div>
-
         <div class="form-group">
           <label>Telefone</label>
           <input type="text" id="f-telefone" placeholder="(11) 99999-9999">
         </div>
-
-        <div class="form-group">
-          <label>Valor do Pedido (R$)</label>
-          <input type="text" id="f-valor" placeholder="0,00">
-        </div>
-
-        <div class="form-group">
-          <label>CD *</label>
-          <select id="f-cd">
-            <option value="">Selecione</option>
-            <option>MT</option>
-            <option>GRU</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Número do Pedido *</label>
-          <input type="text" id="f-numpedido" placeholder="Ex: 470695">
-        </div>
-
-        <div class="form-group">
-          <label>Forma de Envio *</label>
-          <select id="f-envio">
-            <option value="">Selecione</option>
-            <option>TRANSPORTADORA</option>
-            <option>ONIBUS</option>
-            <option>RETIRADA LOJA</option>
-          </select>
-        </div>
-
         <div class="form-group">
           <label>Forma de Pagamento *</label>
           <select id="f-pagamento">
@@ -902,7 +961,6 @@
             <option>CARTÃO</option>
           </select>
         </div>
-
         <div class="form-group">
           <label>Parcelas</label>
           <select id="f-parcelas">
@@ -914,10 +972,67 @@
             <option>5</option>
           </select>
         </div>
-
+        <div class="form-group">
+          <label>Forma de Envio *</label>
+          <select id="f-envio">
+            <option value="">Selecione</option>
+            <option>TRANSPORTADORA</option>
+            <option>ONIBUS</option>
+            <option>RETIRADA LOJA</option>
+          </select>
+        </div>
         <div class="form-group">
           <label>Observações</label>
           <input type="text" id="f-obs" placeholder="Alguma observação importante?">
+        </div>
+      </div>
+
+      <!-- Dados específicos por CD -->
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">Dados do Pedido</div>
+
+      <!-- Pedido 1 (sempre visível) -->
+      <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--roxo-light);margin-bottom:14px" id="label-ped1">📦 Pedido</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>CD *</label>
+            <select id="f-cd">
+              <option value="">Selecione</option>
+              <option>MT</option>
+              <option>GRU</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Número do Pedido *</label>
+            <input type="text" id="f-numpedido" placeholder="Ex: 470695">
+          </div>
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="text" id="f-valor" placeholder="0,00">
+          </div>
+        </div>
+      </div>
+
+      <!-- Pedido 2 (só aparece com 2 CDs) -->
+      <div id="form-pedido2" style="display:none;background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--teal-light);margin-bottom:14px">📦 Pedido 2</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>CD *</label>
+            <select id="f-cd2">
+              <option value="">Selecione</option>
+              <option>MT</option>
+              <option>GRU</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Número do Pedido *</label>
+            <input type="text" id="f-numpedido2" placeholder="Ex: 470696">
+          </div>
+          <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="text" id="f-valor2" placeholder="0,00">
+          </div>
         </div>
       </div>
 
@@ -973,7 +1088,6 @@
           <select id="cad-fil-etapa">
             <option value="">Todas</option>
             <option value="pagamento">Pagamento</option>
-            <option value="separacao">Separação</option>
             <option value="corte">Corte</option>
             <option value="faturamento">Faturamento</option>
             <option value="nota_fiscal">Nota Fiscal</option>
@@ -986,6 +1100,10 @@
         <div class="filtro-group">
           <label>Data de Entrega</label>
           <input type="date" id="cad-fil-data-entrega">
+        </div>
+        <div class="filtro-group">
+          <label>Nº NF</label>
+          <input type="text" id="cad-fil-nf" placeholder="Buscar NF...">
         </div>
         <div class="filtro-group">
           <label>Nº Pedido</label>
@@ -1002,6 +1120,7 @@
           <thead>
             <tr>
               <th>Nº Pedido</th>
+              <th>NF</th>
               <th>Vendedor</th>
               <th>Cliente</th>
               <th>Responsável</th>
@@ -1016,6 +1135,30 @@
             <tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📋</div><p>Nenhum pedido cadastrado ainda.</p></div></td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 3: VENDEDORES -->
+  <div class="tab-content" id="tab-vendedores">
+    <div class="form-header">
+      <h2>Gerenciar Vendedores</h2>
+      <p>Adicione ou remova vendedores do sistema.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+      <!-- Adicionar -->
+      <div class="form-card">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">➕ Adicionar Vendedor</div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Nome do Vendedor *</label>
+          <input type="text" id="novo-vendedor-nome" placeholder="Ex: FERNANDA" style="text-transform:uppercase">
+        </div>
+        <button class="btn-primary" onclick="adicionarVendedor()" style="width:100%">Adicionar</button>
+      </div>
+      <!-- Lista -->
+      <div class="form-card">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">📋 Vendedores Ativos</div>
+        <div id="lista-vendedores" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
   </div>
@@ -1068,19 +1211,18 @@
           <option value="em-andamento">Em Andamento</option>
           <option value="problema">Com Problema</option>
           <option value="entregue">Entregue</option>
-        </select>
+        
+            <option value="cancelado">Cancelado</option>
+          </select>
       </div>
       <div class="filtro-group">
         <label>Etapa</label>
         <select id="fil-etapa">
           <option value="">Todas</option>
           <option value="pagamento">Pagamento</option>
-          <option value="separacao">Separação</option>
-          <option value="corte">Corte</option>
           <option value="faturamento">Faturamento</option>
-          <option value="nota_fiscal">Nota Fiscal</option>
-          <option value="transportadora">Transportadora</option>
           <option value="integracao">Integração</option>
+          <option value="corte">Corte</option>
           <option value="coleta">Coleta</option>
           <option value="entrega">Entrega</option>
         </select>
@@ -1088,6 +1230,10 @@
       <div class="filtro-group">
         <label>Data de Entrega</label>
         <input type="date" id="fil-data-entrega">
+      </div>
+      <div class="filtro-group">
+        <label>Nº NF</label>
+        <input type="text" id="fil-nf" placeholder="Buscar NF...">
       </div>
       <div class="filtro-group">
         <label>Nº Pedido</label>
@@ -1105,6 +1251,7 @@
         <thead>
           <tr>
             <th>Nº Pedido</th>
+            <th>NF</th>
             <th>Vendedor</th>
             <th>Cliente</th>
             <th>Responsável</th>
@@ -1230,15 +1377,54 @@ function sortCadastro(col) {
 }
 
 const ETAPAS = [
-  { id: 'pagamento', nome: 'Pagamento', campos: [{ id: 'data_pagamento', label: 'Data Pagamento', type: 'date' }] },
-  { id: 'separacao', nome: 'Separação', campos: [{ id: 'data_separacao', label: 'Data Separação', type: 'date' }] },
-  { id: 'corte', nome: 'Corte', campos: [{ id: 'data_corte', label: 'Data Corte', type: 'date' }, { id: 'obs_corte', label: 'Observação', type: 'text' }] },
-  { id: 'faturamento', nome: 'Faturamento', campos: [{ id: 'data_faturamento', label: 'Data Faturamento', type: 'date' }, { id: 'prob_faturamento', label: 'Problema de Faturamento', type: 'text' }] },
-  { id: 'nota_fiscal', nome: 'Nota Fiscal', campos: [{ id: 'data_nf', label: 'Data NF', type: 'date' }, { id: 'numero_nf', label: 'Número da NF', type: 'text' }] },
-  { id: 'transportadora', nome: 'Transportadora', campos: [{ id: 'transportadora', label: 'Transportadora', type: 'select', options: ['BRASPRESS','RODONAVES','JAMEF','BUSLOG','PATRUS','TRANSFIGUREDO','ROLDÃO','RETIRADA LOJA'] }] },
-  { id: 'integracao', nome: 'Integração', campos: [{ id: 'integrou', label: 'Integrou?', type: 'select', options: ['SIM','NÃO'] }] },
-  { id: 'coleta', nome: 'Coleta', campos: [{ id: 'data_coleta', label: 'Data Coleta', type: 'date' }] },
-  { id: 'entrega', nome: 'Entrega', campos: [{ id: 'data_entrega_estipulada', label: 'Data Estipulada', type: 'date' }, { id: 'data_entrega_real', label: 'Data Real de Entrega', type: 'date' }, { id: 'motivo_nao_entrega', label: 'Motivo de Não Entrega', type: 'text' }] },
+  {
+    id: 'pagamento',
+    nome: 'Pagamento',
+    campos: [
+      { id: 'data_pagamento', label: 'Data do Pagamento', type: 'date' }
+    ]
+  },
+  {
+    id: 'faturamento',
+    nome: 'Faturamento',
+    campos: [
+      { id: 'data_faturamento', label: 'Data do Faturamento', type: 'date' },
+      { id: 'numero_nf', label: 'Número da NF', type: 'text' },
+      { id: 'transportadora', label: 'Transportadora', type: 'select', options: ['BRASPRESS','RODONAVES','JAMEF','BUSLOG','PATRUS','TRANSFIGUREDO','ROLDÃO','RETIRADA LOJA'] },
+      { id: 'prob_faturamento', label: 'Problema de Faturamento', type: 'text' }
+    ]
+  },
+  {
+    id: 'integracao',
+    nome: 'Integração',
+    campos: [
+      { id: 'integrou', label: 'Integrou?', type: 'select', options: ['SIM','NÃO'] }
+    ]
+  },
+  {
+    id: 'corte',
+    nome: 'Corte',
+    campos: [
+      { id: 'houve_corte', label: 'Houve corte?', type: 'select', options: ['NÃO','SIM'] },
+      { id: 'obs_corte', label: 'Observação do Corte', type: 'text' }
+    ]
+  },
+  {
+    id: 'coleta',
+    nome: 'Coleta',
+    campos: [
+      { id: 'data_coleta', label: 'Data da Coleta', type: 'date' }
+    ]
+  },
+  {
+    id: 'entrega',
+    nome: 'Entrega',
+    campos: [
+      { id: 'data_entrega_estipulada', label: 'Data Estipulada', type: 'date' },
+      { id: 'data_entrega_real', label: 'Data Real de Entrega', type: 'date' },
+      { id: 'motivo_nao_entrega', label: 'Motivo de Não Entrega', type: 'text' }
+    ]
+  },
 ];
 
 // ===== LOAD/SAVE =====
@@ -1291,55 +1477,62 @@ function switchTab(tab, btn) {
   btn.classList.add('active');
   if (tab === 'backoffice') renderBackoffice();
   if (tab === 'cadastro') renderMeusPedidos();
+  if (tab === 'vendedores') renderVendedores();
 }
 
 // ===== CADASTRO =====
 async function salvarPedido() {
-  const v = {
+  const comum = {
     vendedor: document.getElementById('f-vendedor').value,
     emissao: document.getElementById('f-emissao').value,
     cod_cliente: document.getElementById('f-codcliente').value,
     responsavel: document.getElementById('f-responsavel').value,
     telefone: document.getElementById('f-telefone').value,
-    valor: document.getElementById('f-valor').value,
-    cd: document.getElementById('f-cd').value,
-    num_pedido: document.getElementById('f-numpedido').value,
     envio: document.getElementById('f-envio').value,
     pagamento: document.getElementById('f-pagamento').value,
     parcelas: document.getElementById('f-parcelas').value,
     obs: document.getElementById('f-obs').value,
   };
 
-  const obrigatorios = ['vendedor','emissao','cod_cliente','responsavel','cd','num_pedido','envio','pagamento'];
-  for (const campo of obrigatorios) {
-    if (!v[campo]) {
-      showToast('Preencha todos os campos obrigatórios (*)', true);
-      return;
-    }
+  const obrigComum = ['vendedor','emissao','cod_cliente','responsavel','envio','pagamento'];
+  for (const campo of obrigComum) {
+    if (!comum[campo]) { showToast('Preencha todos os campos obrigatórios (*)', true); return; }
   }
 
-  const pedido = {
-    id: gerarId(),
-    ...v,
-    criado_em: new Date().toISOString(),
-    status: 'novo',
-    etapas: {},
-  };
+  const pedidos_novos = [];
+
+  // Pedido 1
+  const cd1 = document.getElementById('f-cd').value;
+  const num1 = document.getElementById('f-numpedido').value;
+  const val1 = document.getElementById('f-valor').value;
+  if (!cd1 || !num1) { showToast('Preencha o CD e Nº Pedido do Pedido 1', true); return; }
+  pedidos_novos.push({ ...comum, cd: cd1, num_pedido: num1, valor: val1 });
+
+  // Pedido 2 (se selecionado)
+  if (numCDs === 2) {
+    const cd2 = document.getElementById('f-cd2').value;
+    const num2 = document.getElementById('f-numpedido2').value;
+    const val2 = document.getElementById('f-valor2').value;
+    if (!cd2 || !num2) { showToast('Preencha o CD e Nº Pedido do Pedido 2', true); return; }
+    pedidos_novos.push({ ...comum, cd: cd2, num_pedido: num2, valor: val2 });
+  }
 
   mostrarLoading('Salvando pedido...');
-  const criado = await criarPedido(pedido);
-  ocultarLoading();
-  if (criado) {
-    pedidos.unshift(criado);
-    limparForm();
-    renderMeusPedidos();
-    showToast('✓ Pedido #' + v.num_pedido + ' salvo com sucesso!');
+  for (const v of pedidos_novos) {
+    const pedido = { id: gerarId(), ...v, criado_em: new Date().toISOString(), status: 'novo', etapas: {} };
+    const criado = await criarPedido(pedido);
+    if (criado) pedidos.unshift(criado);
   }
+  ocultarLoading();
+  limparForm();
+  renderMeusPedidos();
+  showToast('✓ ' + pedidos_novos.length + ' pedido(s) salvo(s) com sucesso!');
 }
 
 function limparForm() {
-  ['f-vendedor','f-emissao','f-codcliente','f-responsavel','f-telefone','f-valor','f-cd','f-numpedido','f-envio','f-pagamento','f-parcelas','f-obs']
-    .forEach(id => document.getElementById(id).value = '');
+  ['f-vendedor','f-emissao','f-codcliente','f-responsavel','f-telefone','f-valor','f-cd','f-numpedido','f-envio','f-pagamento','f-parcelas','f-obs','f-cd2','f-numpedido2','f-valor2']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  selecionarNumCDs(1);
 }
 
 function renderMeusPedidos(lista, preserveList) {
@@ -1362,7 +1555,8 @@ function renderMeusPedidos(lista, preserveList) {
 
   tbody.innerHTML = fonte.map(p => `
     <tr onclick="abrirModal('${p.id}')">
-      <td class="td-pedido">${p.num_pedido}</td>
+      <td class="td-pedido">${p.num_pedido} <button class="btn-copiar" onclick="copiar('${p.num_pedido}', event)" title="Copiar">⧉</button></td>
+      <td class="td-pedido" style="color:var(--teal-light)">${(p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf) ? `<span>${p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf}</span> <button class="btn-copiar" onclick="copiar('${p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf}', event)" title="Copiar">⧉</button>` : '—'}</td>
       <td class="td-vendedor">${p.vendedor}</td>
       <td>${p.cod_cliente}</td>
       <td>${(p.responsavel||'').toUpperCase()}</td>
@@ -1382,6 +1576,7 @@ function aplicarFiltrosCad() {
   const fStatus = document.getElementById('cad-fil-status').value;
   const fEtapa = document.getElementById('cad-fil-etapa').value;
   const fNum = document.getElementById('cad-fil-num').value.toLowerCase();
+  const fNFcad = document.getElementById('cad-fil-nf').value.toLowerCase();
   const fDataEntregaCad = document.getElementById('cad-fil-data-entrega').value;
 
   const resultado = pedidos.filter(p => {
@@ -1390,6 +1585,10 @@ function aplicarFiltrosCad() {
     if (fAte && p.emissao > fAte) return false;
     if (fStatus && p.status !== fStatus) return false;
     if (fNum && !p.num_pedido.toLowerCase().includes(fNum)) return false;
+    if (fNFcad) {
+      const nf = (p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf || '').toLowerCase();
+      if (!nf.includes(fNFcad)) return false;
+    }
     if (fDataEntregaCad) {
       const est = p.etapas?.entrega?.data_entrega_estipulada;
       if (!est || est !== fDataEntregaCad) return false;
@@ -1407,7 +1606,7 @@ function aplicarFiltrosCad() {
 }
 
 function limparFiltrosCad() {
-  ['cad-fil-vendedor','cad-fil-data-de','cad-fil-data-ate','cad-fil-status','cad-fil-etapa','cad-fil-data-entrega','cad-fil-num'].forEach(id => document.getElementById(id).value = '');
+  ['cad-fil-vendedor','cad-fil-data-de','cad-fil-data-ate','cad-fil-status','cad-fil-etapa','cad-fil-data-entrega','cad-fil-nf','cad-fil-num'].forEach(id => document.getElementById(id).value = '');
   renderMeusPedidos();
 }
 
@@ -1418,6 +1617,7 @@ function aplicarFiltros() {
   const fAte = document.getElementById('fil-data-ate').value;
   const fStatus = document.getElementById('fil-status').value;
   const fNum = document.getElementById('fil-numpedido').value.toLowerCase();
+  const fNF = document.getElementById('fil-nf').value.toLowerCase();
   const fEtapa = document.getElementById('fil-etapa').value;
   const fDataEntrega = document.getElementById('fil-data-entrega').value;
 
@@ -1427,6 +1627,10 @@ function aplicarFiltros() {
     if (fAte && p.emissao > fAte) return false;
     if (fStatus && p.status !== fStatus) return false;
     if (fNum && !p.num_pedido.toLowerCase().includes(fNum)) return false;
+    if (fNF) {
+      const nf = (p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf || '').toLowerCase();
+      if (!nf.includes(fNF)) return false;
+    }
     if (fDataEntrega) {
       const est = p.etapas?.entrega?.data_entrega_estipulada;
       if (!est || est !== fDataEntrega) return false;
@@ -1450,7 +1654,7 @@ function aplicarFiltros() {
 }
 
 function limparFiltros() {
-  ['fil-vendedor','fil-data-de','fil-data-ate','fil-status','fil-etapa','fil-data-entrega','fil-numpedido'].forEach(id => document.getElementById(id).value = '');
+  ['fil-vendedor','fil-data-de','fil-data-ate','fil-status','fil-etapa','fil-data-entrega','fil-nf','fil-numpedido'].forEach(id => document.getElementById(id).value = '');
   aplicarFiltros();
 }
 
@@ -1494,7 +1698,8 @@ function renderTabela() {
     const prog = calcularProgresso(p);
     return `
     <tr onclick="abrirModal('${p.id}')">
-      <td class="td-pedido">${p.num_pedido}</td>
+      <td class="td-pedido">${p.num_pedido} <button class="btn-copiar" onclick="copiar('${p.num_pedido}', event)" title="Copiar">⧉</button></td>
+      <td class="td-pedido" style="color:var(--teal-light)">${(p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf) ? `<span>${p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf}</span> <button class="btn-copiar" onclick="copiar('${p.etapas?.faturamento?.numero_nf || p.etapas?.nota_fiscal?.numero_nf}', event)" title="Copiar">⧉</button>` : '—'}</td>
       <td class="td-vendedor">${p.vendedor}</td>
       <td>${p.cod_cliente}</td>
       <td>${(p.responsavel||'').toUpperCase()}</td>
@@ -1591,7 +1796,24 @@ function abrirModal(id) {
       const val = et[c.id] || '';
       if (c.type === 'select') {
         const opts = c.options.map(o => `<option ${o === val ? 'selected' : ''}>${o}</option>`).join('');
-        return `<div class="form-group"><label>${c.label}</label><select id="campo-${e.id}-${c.id}">${opts.length ? '<option value="">Selecione</option>' + opts : opts}</select></div>`;
+        return `<div class="form-group"><label>${c.label}</label><select id="campo-${e.id}-${c.id}">${'<option value="">Selecione</option>' + opts}</select></div>`;
+      }
+      // Campos de observação viram registros
+      if (c.id.startsWith('obs') || c.id.startsWith('prob') || c.id.startsWith('motivo')) {
+        const registros = Array.isArray(et[c.id]) ? et[c.id] : (et[c.id] ? [{ texto: et[c.id], data: '' }] : []);
+        const itens = registros.map((r, i) => `
+          <div class="registro-item">
+            <div class="registro-meta">Registro ${i+1}${r.data ? ' · ' + r.data : ''}</div>
+            <div class="registro-texto">${r.texto}</div>
+          </div>`).join('');
+        return `<div class="form-group" style="grid-column:1/-1">
+          <label>${c.label}</label>
+          <div class="registros-container" id="registros-${e.id}-${c.id}">${itens || '<div style="color:var(--text-dim);font-size:12px;padding:4px">Nenhum registro ainda.</div>'}</div>
+          <div class="registro-input-area">
+            <input type="text" id="campo-${e.id}-${c.id}" placeholder="Novo registro...">
+            <button class="btn-add-registro" onclick="adicionarRegistro('${e.id}','${c.id}')">+ Adicionar</button>
+          </div>
+        </div>`;
       }
       return `<div class="form-group"><label>${c.label}</label><input type="${c.type}" id="campo-${e.id}-${c.id}" value="${val}" placeholder="${c.label}"></div>`;
     }).join('');
@@ -1627,10 +1849,17 @@ function toggleStep(id) {
 function selecionarStatus(etapaId, status) {
   const el = document.getElementById('step-' + etapaId);
   const btns = el.querySelectorAll('.status-btn');
-  btns.forEach(b => { b.classList.remove('selected-ok','selected-pendente','selected-problema'); });
   const mapa = { ok: 'selected-ok', pendente: 'selected-pendente', problema: 'selected-problema' };
-  btns[['ok','pendente','problema'].indexOf(status)].classList.add(mapa[status]);
-  el._statusSelecionado = status;
+  const classeAtual = mapa[status];
+  const jaAtivo = btns[['ok','pendente','problema'].indexOf(status)]?.classList.contains(classeAtual);
+  // Toggle: se já estava selecionado, desmarca
+  btns.forEach(b => { b.classList.remove('selected-ok','selected-pendente','selected-problema'); });
+  if (!jaAtivo) {
+    btns[['ok','pendente','problema'].indexOf(status)].classList.add(classeAtual);
+    el._statusSelecionado = status;
+  } else {
+    el._statusSelecionado = ''; // desmarcado — vai deletar a etapa ao salvar
+  }
 }
 
 async function salvarEtapa(etapaId) {
@@ -1638,16 +1867,27 @@ async function salvarEtapa(etapaId) {
   if (!p) return;
 
   const el = document.getElementById('step-' + etapaId);
-  const status = el._statusSelecionado || p.etapas[etapaId]?.status || '';
+  const status = el._statusSelecionado !== undefined ? el._statusSelecionado : (p.etapas[etapaId]?.status || '');
 
-  if (!p.etapas[etapaId]) p.etapas[etapaId] = {};
-  p.etapas[etapaId].status = status;
+  // Se status vazio (desmarcado), remover a etapa completamente
+  if (!status) {
+    delete p.etapas[etapaId];
+  } else {
+    if (!p.etapas[etapaId]) p.etapas[etapaId] = {};
+    p.etapas[etapaId].status = status;
 
-  const etapa = ETAPAS.find(e => e.id === etapaId);
-  etapa.campos.forEach(c => {
-    const inp = document.getElementById(`campo-${etapaId}-${c.id}`);
-    if (inp) p.etapas[etapaId][c.id] = inp.value;
-  });
+    const etapa = ETAPAS.find(e => e.id === etapaId);
+    etapa.campos.forEach(c => {
+      // Campos de registro não são sobrescritos pelo salvarEtapa (gerenciados por adicionarRegistro)
+      if (c.id.startsWith('obs') || c.id.startsWith('prob') || c.id.startsWith('motivo')) return;
+      const inp = document.getElementById(`campo-${etapaId}-${c.id}`);
+      if (inp !== null && inp !== undefined) {
+        p.etapas[etapaId][c.id] = inp.value;
+      }
+    });
+    // Forçar novo objeto para garantir reatividade
+    p.etapas = { ...p.etapas, [etapaId]: { ...p.etapas[etapaId] } };
+  }
 
   // Atualizar status geral do pedido
   p.status = calcularStatusGeral(p);
@@ -1663,17 +1903,22 @@ async function salvarEtapa(etapaId) {
   stEl.className = `step-item ${cls} expanded`;
   stEl.querySelector('.step-status-label').textContent = labelTxt;
   stEl.querySelector('.step-number').style.cssText = '';
+  // Se desmarcado, resetar o _statusSelecionado para undefined
+  if (!status) { stEl._statusSelecionado = undefined; }
 
   showToast('✓ Etapa salva!');
 
   // Atualizar pedido na lista sem mudar posição
+  const _pAtualizado = { ...p, etapas: { ...p.etapas } };
   const _idxFil = pedidosFiltrados.findIndex(x => x.id === pedidoAtualId);
-  if (_idxFil !== -1) pedidosFiltrados[_idxFil] = p;
+  if (_idxFil !== -1) pedidosFiltrados[_idxFil] = _pAtualizado;
   const _idxAll = pedidos.findIndex(x => x.id === pedidoAtualId);
-  if (_idxAll !== -1) pedidos[_idxAll] = p;
+  if (_idxAll !== -1) pedidos[_idxAll] = _pAtualizado;
   if (document.getElementById('tab-backoffice').classList.contains('active')) {
     renderTabela();
     renderStats();
+  } else {
+    renderMeusPedidos();
   }
 }
 
@@ -1797,24 +2042,64 @@ function excluirPedido(id) {
     </div>`;
 }
 
+async function deletarPedido(id) {
+  try {
+    const res = await fetch(API + '?id=eq.' + id, {
+      method: 'DELETE',
+      headers: HEADERS
+    });
+    if (!res.ok) throw new Error(await res.text());
+  } catch(e) {
+    console.error('Erro ao deletar:', e);
+    showToast('Erro ao excluir: ' + e.message, true);
+  }
+}
+
 async function criarPedido(pedido) {
+  const payload = { ...pedido };
+  delete payload.atualizado_em;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const res = await fetch(API, {
       method: 'POST',
       headers: HEADERS,
-      body: JSON.stringify(pedido)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
-    if (!res.ok) {
-      const err = await res.text();
-      console.error('Erro Supabase:', err);
-      throw new Error(err);
-    }
-    const criado = await res.json();
+    clearTimeout(timeout);
+    const respText = await res.text();
+    if (!res.ok) throw new Error(res.status + ': ' + respText);
+    const criado = JSON.parse(respText);
     return Array.isArray(criado) ? criado[0] : criado;
   } catch(e) {
-    console.error('Erro ao criar pedido:', e);
-    showToast('Erro ao salvar pedido: ' + e.message, true);
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') {
+      showToast('Timeout: Supabase demorou demais.', true);
+    } else {
+      showToast('Erro: ' + e.message, true);
+    }
+    ocultarLoading();
     return null;
+  }
+}
+
+async function criarPedidosLote(lista) {
+  const LOTE = 50;
+  for (let i = 0; i < lista.length; i += LOTE) {
+    const chunk = lista.slice(i, i + LOTE);
+    mostrarLoading('Importando ' + Math.min(i + LOTE, lista.length) + ' de ' + lista.length + '...');
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { ...HEADERS, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(chunk)
+      });
+      if (!res.ok) throw new Error(await res.text());
+    } catch(e) {
+      console.error('Erro lote:', e);
+      showToast('Erro ao importar lote ' + (Math.floor(i/LOTE)+1), true);
+    }
   }
 }
 
@@ -1907,6 +2192,135 @@ async function salvarEdicao(id) {
   showToast('✓ Pedido atualizado!');
   renderMeusPedidos();
   if (document.getElementById('tab-backoffice').classList.contains('active')) renderBackoffice();
+}
+
+// ===== COPIAR PARA ÁREA DE TRANSFERÊNCIA =====
+function copiar(texto, event) {
+  event.stopPropagation();
+  navigator.clipboard.writeText(texto).then(() => {
+    showToast('✓ Copiado: ' + texto);
+  }).catch(() => {
+    // Fallback para navegadores antigos
+    const el = document.createElement('textarea');
+    el.value = texto;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('✓ Copiado: ' + texto);
+  });
+}
+
+// ===== GERENCIAR VENDEDORES =====
+const VENDEDORES_KEY = 'avacy_vendedores_v1';
+let vendedores = ['ADRIANA','ALINE','CASSIA','CINTIA','GIOVANA','GIULIANO','JOÃO','JULIA','KEULLY','SAMARA'];
+
+function carregarVendedores() {
+  const saved = localStorage.getItem(VENDEDORES_KEY);
+  if (saved) vendedores = JSON.parse(saved);
+  renderVendedores();
+  atualizarSelectsVendedor();
+}
+
+function salvarVendedores() {
+  localStorage.setItem(VENDEDORES_KEY, JSON.stringify(vendedores));
+}
+
+function renderVendedores() {
+  const lista = document.getElementById('lista-vendedores');
+  if (!lista) return;
+  if (!vendedores.length) {
+    lista.innerHTML = '<div style="color:var(--text-dim);font-size:13px">Nenhum vendedor cadastrado.</div>';
+    return;
+  }
+  lista.innerHTML = vendedores.map(v => `
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+      <span style="font-size:14px;font-weight:600;color:var(--text)">${v}</span>
+      <button onclick="removerVendedor('${v}')" style="background:transparent;border:1px solid rgba(239,68,68,0.3);color:#EF4444;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif">Remover</button>
+    </div>`).join('');
+}
+
+function atualizarSelectsVendedor() {
+  const opts = '<option value="">Selecione</option>' + vendedores.map(v => `<option>${v}</option>`).join('');
+  ['f-vendedor','fil-vendedor','cad-fil-vendedor'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const val = el.value;
+      el.innerHTML = opts;
+      el.value = val;
+    }
+  });
+}
+
+function adicionarVendedor() {
+  const inp = document.getElementById('novo-vendedor-nome');
+  const nome = inp.value.trim().toUpperCase();
+  if (!nome) { showToast('Digite o nome do vendedor', true); return; }
+  if (vendedores.includes(nome)) { showToast('Vendedor já cadastrado', true); return; }
+  vendedores.push(nome);
+  vendedores.sort();
+  salvarVendedores();
+  renderVendedores();
+  atualizarSelectsVendedor();
+  inp.value = '';
+  showToast('✓ ' + nome + ' adicionado!');
+}
+
+function removerVendedor(nome) {
+  if (!confirm(`Remover "${nome}" do sistema?`)) return;
+  vendedores = vendedores.filter(v => v !== nome);
+  salvarVendedores();
+  renderVendedores();
+  atualizarSelectsVendedor();
+  showToast(nome + ' removido');
+}
+
+// ===== NÚMERO DE CDs =====
+let numCDs = 1;
+
+function selecionarNumCDs(n) {
+  numCDs = n;
+  document.getElementById('btn-1cd').classList.toggle('active', n === 1);
+  document.getElementById('btn-2cd').classList.toggle('active', n === 2);
+  document.getElementById('form-pedido2').style.display = n === 2 ? 'block' : 'none';
+  document.getElementById('label-ped1').textContent = n === 2 ? '📦 Pedido 1' : '📦 Pedido';
+}
+
+// ===== REGISTROS DE OBSERVAÇÃO =====
+function adicionarRegistro(etapaId, campoId) {
+  const input = document.getElementById(`campo-${etapaId}-${campoId}`);
+  const texto = input?.value?.trim();
+  if (!texto) { showToast('Digite algo antes de adicionar', true); return; }
+
+  const p = pedidos.find(x => x.id === pedidoAtualId);
+  if (!p) return;
+  if (!p.etapas[etapaId]) p.etapas[etapaId] = { status: '' };
+
+  const agora = new Date();
+  const dataFmt = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  // Migrar texto antigo para array se necessário
+  const atual = p.etapas[etapaId][campoId];
+  if (!Array.isArray(atual)) {
+    p.etapas[etapaId][campoId] = atual ? [{ texto: atual, data: '' }] : [];
+  }
+
+  p.etapas[etapaId][campoId].push({ texto, data: dataFmt });
+  input.value = '';
+
+  // Atualizar visual sem fechar o step
+  const container = document.getElementById(`registros-${etapaId}-${campoId}`);
+  if (container) {
+    const registros = p.etapas[etapaId][campoId];
+    container.innerHTML = registros.map((r, i) => `
+      <div class="registro-item">
+        <div class="registro-meta">Registro ${i+1}${r.data ? ' · ' + r.data : ''}</div>
+        <div class="registro-texto">${r.texto}</div>
+      </div>`).join('');
+  }
+
+  saveData(p);
+  showToast('✓ Registro adicionado');
 }
 
 // ===== EXPORTAR DADOS =====
@@ -2167,6 +2581,7 @@ function iniciarRealtime() {
 // ===== INIT =====
 (async () => {
   await loadData();
+  carregarVendedores();
   renderMeusPedidos();
   renderBackoffice();
   atualizarBadge();
