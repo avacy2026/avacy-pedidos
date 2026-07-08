@@ -1882,7 +1882,12 @@ async function salvarEtapa(etapaId) {
       if (c.id.startsWith('obs') || c.id.startsWith('prob') || c.id.startsWith('motivo')) return;
       const inp = document.getElementById(`campo-${etapaId}-${c.id}`);
       if (inp !== null && inp !== undefined) {
-        p.etapas[etapaId][c.id] = inp.value;
+        let val = inp.value;
+        // Remover zeros à esquerda do número da NF
+        if (c.id === 'numero_nf' && val) {
+          val = val.replace(/^0+/, '') || val;
+        }
+        p.etapas[etapaId][c.id] = val;
       }
     });
     // Forçar novo objeto para garantir reatividade
@@ -2212,18 +2217,21 @@ function copiar(texto, event) {
 }
 
 // ===== GERENCIAR VENDEDORES =====
-const VENDEDORES_KEY = 'avacy_vendedores_v1';
-let vendedores = ['ADRIANA','ALINE','CASSIA','CINTIA','GIOVANA','GIULIANO','JOÃO','JULIA','KEULLY','SAMARA'];
+const API_VENDEDORES = SUPABASE_URL + '/rest/v1/vendedores';
+let vendedores = [];
 
-function carregarVendedores() {
-  const saved = localStorage.getItem(VENDEDORES_KEY);
-  if (saved) vendedores = JSON.parse(saved);
+async function carregarVendedores() {
+  try {
+    const res = await fetch(API_VENDEDORES + '?ativo=eq.true&order=nome.asc', { headers: HEADERS });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    vendedores = data.map(v => v.nome);
+  } catch(e) {
+    console.error('Erro ao carregar vendedores:', e);
+    vendedores = ['ADRIANA','ALINE','CASSIA','CINTIA','GIOVANA','GIULIANO','JOÃO','JULIA','KEULLY','SAMARA'];
+  }
   renderVendedores();
   atualizarSelectsVendedor();
-}
-
-function salvarVendedores() {
-  localStorage.setItem(VENDEDORES_KEY, JSON.stringify(vendedores));
 }
 
 function renderVendedores() {
@@ -2252,27 +2260,44 @@ function atualizarSelectsVendedor() {
   });
 }
 
-function adicionarVendedor() {
+async function adicionarVendedor() {
   const inp = document.getElementById('novo-vendedor-nome');
   const nome = inp.value.trim().toUpperCase();
   if (!nome) { showToast('Digite o nome do vendedor', true); return; }
   if (vendedores.includes(nome)) { showToast('Vendedor já cadastrado', true); return; }
-  vendedores.push(nome);
-  vendedores.sort();
-  salvarVendedores();
-  renderVendedores();
-  atualizarSelectsVendedor();
-  inp.value = '';
-  showToast('✓ ' + nome + ' adicionado!');
+  try {
+    const res = await fetch(API_VENDEDORES, {
+      method: 'POST',
+      headers: HEADERS,
+      body: JSON.stringify({ nome, ativo: true })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    vendedores.push(nome);
+    vendedores.sort();
+    renderVendedores();
+    atualizarSelectsVendedor();
+    inp.value = '';
+    showToast('✓ ' + nome + ' adicionado!');
+  } catch(e) {
+    showToast('Erro ao adicionar: ' + e.message, true);
+  }
 }
 
-function removerVendedor(nome) {
+async function removerVendedor(nome) {
   if (!confirm(`Remover "${nome}" do sistema?`)) return;
-  vendedores = vendedores.filter(v => v !== nome);
-  salvarVendedores();
-  renderVendedores();
-  atualizarSelectsVendedor();
-  showToast(nome + ' removido');
+  try {
+    const res = await fetch(API_VENDEDORES + '?nome=eq.' + encodeURIComponent(nome), {
+      method: 'DELETE',
+      headers: HEADERS
+    });
+    if (!res.ok) throw new Error(await res.text());
+    vendedores = vendedores.filter(v => v !== nome);
+    renderVendedores();
+    atualizarSelectsVendedor();
+    showToast(nome + ' removido');
+  } catch(e) {
+    showToast('Erro ao remover: ' + e.message, true);
+  }
 }
 
 // ===== NÚMERO DE CDs =====
@@ -2580,8 +2605,7 @@ function iniciarRealtime() {
 
 // ===== INIT =====
 (async () => {
-  await loadData();
-  carregarVendedores();
+  await Promise.all([loadData(), carregarVendedores()]);
   renderMeusPedidos();
   renderBackoffice();
   atualizarBadge();
